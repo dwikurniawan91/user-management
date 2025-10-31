@@ -124,13 +124,14 @@ describe('UsersList', () => {
 
     expect(screen.getByText('Add New User')).toBeInTheDocument()
 
-    fireEvent.change(screen.getByLabelText('Name'), {
+    const nameInput = await screen.findByLabelText('Name')
+    fireEvent.change(nameInput, {
       target: { value: 'John Doe' },
     })
-    fireEvent.change(screen.getByLabelText('Username'), {
+    fireEvent.change(await screen.findByLabelText('Username'), {
       target: { value: 'johndoe' },
     })
-    fireEvent.change(screen.getByLabelText('Email'), {
+    fireEvent.change(await screen.findByLabelText('Email'), {
       target: { value: 'john@example.com' },
     })
 

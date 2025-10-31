@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { Suspense, lazy, useEffect, useState } from 'react'
 import useUserStore from '@/stores/userStore'
 import type { User } from '@/stores/userStore'
 import { Card, CardContent } from '@/components/ui/card'
@@ -16,8 +16,20 @@ import {
 } from '@/components/ui/alert-dialog'
 import { toast, Toaster } from 'sonner'
 import { Button } from '@/components/ui/button'
-import UserForm from '@/components/ui/UserForm/UserForm'
 import { Skeleton } from '@/components/ui/skeleton'
+
+const UserForm = lazy(() => import('@/components/ui/UserForm/UserForm'))
+
+const FormFallback = () => (
+  <div className="grid gap-4">
+    <Skeleton className="h-10" />
+    <Skeleton className="h-10" />
+    <Skeleton className="h-10" />
+    <Skeleton className="h-10" />
+    <Skeleton className="h-10" />
+    <Skeleton className="h-10" />
+  </div>
+)
 
 export default function UsersList() {
   const users = useUserStore((s) => s.users)
@@ -63,14 +75,16 @@ export default function UsersList() {
             <AlertDialogTitle>Add New User</AlertDialogTitle>
             <AlertDialogDescription>Fill in the details for the new user</AlertDialogDescription>
           </AlertDialogHeader>
-          <UserForm
-            onSubmit={(data) => {
-              addUser(data)
-              setShowAddDialog(false)
-              toast.success('User added successfully')
-            }}
-            onCancel={() => setShowAddDialog(false)}
-          />
+          <Suspense fallback={<FormFallback />}>
+            <UserForm
+              onSubmit={(data) => {
+                addUser(data)
+                setShowAddDialog(false)
+                toast.success('User added successfully')
+              }}
+              onCancel={() => setShowAddDialog(false)}
+            />
+          </Suspense>
         </AlertDialogContent>
       </AlertDialog>
 
@@ -161,15 +175,17 @@ export default function UsersList() {
                           <AlertDialogTitle>Edit User</AlertDialogTitle>
                           <AlertDialogDescription>Update user details</AlertDialogDescription>
                         </AlertDialogHeader>
-                        <UserForm
-                          initialData={u}
-                          onSubmit={(data) => {
-                            updateUser(u.id, data)
-                            setEditingUser(null)
-                            toast.success('User updated successfully')
-                          }}
-                          onCancel={() => setEditingUser(null)}
-                        />
+                        <Suspense fallback={<FormFallback />}>
+                          <UserForm
+                            initialData={u}
+                            onSubmit={(data) => {
+                              updateUser(u.id, data)
+                              setEditingUser(null)
+                              toast.success('User updated successfully')
+                            }}
+                            onCancel={() => setEditingUser(null)}
+                          />
+                        </Suspense>
                       </>
                     ) : (
                       <>
