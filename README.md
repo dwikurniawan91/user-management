@@ -1,3 +1,4 @@
+# Demo: https://uswr.netlify.app/
 # User Management App
 
 Interactive user directory built with React, TypeScript, and Vite. It fetches users from a configurable API, lets you add/update/delete records in memory, and showcases modern component patterns (forms, dialogs, skeleton loading states) alongside a production-ready toolchain (testing, Docker, CI/CD, Netlify deploys).
