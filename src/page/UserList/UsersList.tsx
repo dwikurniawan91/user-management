@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import { toast, Toaster } from 'sonner'
 import { Button } from '@/components/ui/button'
-import UserForm from '@/components/UserForm'
+import UserForm from '@/components/ui/UserForm/UserForm'
 import { Skeleton } from '@/components/ui/skeleton'
 
 export default function UsersList() {
@@ -28,6 +28,12 @@ export default function UsersList() {
   useEffect(() => {
     if (users.length === 0) fetchUsers()
   }, [fetchUsers, users.length])
+
+  useEffect(() => {
+    if (error) {
+      toast.error(error)
+    }
+  }, [error])
 
   const [showAddDialog, setShowAddDialog] = useState(false)
   const [editingUser, setEditingUser] = useState<User | null>(null)

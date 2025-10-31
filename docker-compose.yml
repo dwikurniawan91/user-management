@@ -1,0 +1,35 @@
+services:
+  dev:
+    image: node:20-alpine
+    working_dir: /app
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0 --port 5173"
+    ports:
+      - "5173:5173"
+    env_file:
+      - .env
+    environment:
+      - VITE_API_URL
+    volumes:
+      - .:/app
+      - /app/node_modules
+
+  test:
+    build:
+      context: .
+      target: test
+      args:
+        - VITE_API_URL=${VITE_API_URL}
+    env_file:
+      - .env
+    command: npm test -- --run
+
+  app:
+    build:
+      context: .
+      target: production
+      args:
+        - VITE_API_URL=${VITE_API_URL}
+    env_file:
+      - .env
+    ports:
+      - "8080:80"

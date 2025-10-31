@@ -1,0 +1,14 @@
+node_modules
+dist
+.git
+.github
+.vscode
+*.log
+coverage
+tmp
+build
+Dockerfile
+docker-compose.yml
+.DS_Store
+README.md
+deploy/netlify.toml
