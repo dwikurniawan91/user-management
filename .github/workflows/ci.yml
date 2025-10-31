@@ -92,11 +92,13 @@ jobs:
         if: github.event_name == 'pull_request'
         run: echo "Pull request detected - skipping deployment stage."
 
+      - name: Install Netlify CLI
+        if: github.event_name != 'pull_request'
+        run: npm install -g netlify-cli
+
       - name: Deploy to Netlify
         if: github.event_name != 'pull_request'
-        uses: netlify/actions/cli@main
-        with:
-          args: deploy --dir=dist --prod
+        run: netlify deploy --dir=dist --prod
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}

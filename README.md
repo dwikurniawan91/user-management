@@ -96,7 +96,7 @@ docker compose up app     # build + run production image on port 8080
 - Stages:
   1. **Test** – Runs Vitest in Docker (`docker compose run test`).
   2. **Build** – Builds Docker image, extracts `dist`, uploads artifact.
-  3. **Deploy** – Netlify CLI deploy (skipped for PRs).
+  3. **Deploy** – Installs the Netlify CLI and publishes `dist` (skipped for PRs).
   4. **Cleanup** – Docker prune to keep runners clean.
 
 ### Required GitHub Secrets
