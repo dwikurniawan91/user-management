@@ -2,7 +2,7 @@
 
 FROM node:20-alpine AS base
 WORKDIR /app
-ENV NODE_ENV=production
+ENV NODE_ENV=development
 
 COPY package.json package-lock.json* ./
 RUN npm ci
@@ -13,6 +13,7 @@ CMD ["npm", "test", "--", "--run"]
 
 FROM base AS build
 ARG VITE_API_URL
+ENV NODE_ENV=production
 ENV VITE_API_URL=${VITE_API_URL}
 COPY . .
 RUN npm run build
