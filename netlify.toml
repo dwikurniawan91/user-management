@@ -1,0 +1,7 @@
+[build]
+  publish = "dist"
+  command = "echo \"Skipping build: handled via GitHub Actions\""
+  ignore = "exit 0"
+
+[context.production]
+  command = "echo \"Skipping build: handled via GitHub Actions\""

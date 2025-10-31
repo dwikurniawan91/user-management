@@ -50,6 +50,14 @@ Create the following repository secrets before enabling the workflow:
 - `NETLIFY_AUTH_TOKEN` – Personal access token from Netlify.
 - `NETLIFY_SITE_ID` – Site ID of the Netlify project that should receive deployments.
 
+### Netlify configuration
+
+This project assumes **GitHub Actions-only deploys**. The workflow builds the site and uploads the `dist` folder via `netlify-cli`, so Netlify only serves the prebuilt assets.
+
+To avoid duplicate builds:
+
+1. Add `netlify.toml` (already included) to your repo. It sets `ignore = "exit 0"` so any Netlify-triggered builds are skipped automatically.
+2. In the Netlify UI, open your site → **Site settings → Build & deploy → Continuous deployment** and click **Stop builds** (or set the skip command) so Netlify does not attempt to build on its own.
 ## Netlify deployment
 
 The pipeline uses the official [`netlify/actions/cli`](https://github.com/netlify/actions) action to publish the `dist` directory. You can also deploy manually:
