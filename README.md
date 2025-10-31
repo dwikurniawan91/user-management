@@ -1,73 +1,62 @@
-# React + TypeScript + Vite
+# User Management App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React + TypeScript application scaffolded with Vite and enhanced with Docker and a GitHub Actions powered CI/CD pipeline.
 
-Currently, two official plugins are available:
+## Requirements
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Node.js 20+ (only needed if you want to run locally without Docker)
+- Docker & Docker Compose
+- Netlify account (for automated deployments)
 
-## React Compiler
+## Environment
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Set `VITE_API_URL` to point at the user API. For local development you can create a `.env` file or export the value in your shell.
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```
+VITE_API_URL=https://jsonplaceholder.typicode.com/users
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+> Copy `.env.example` to `.env` and adjust the value for your environment before running any Docker commands.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Local Development
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
+npm run dev
 ```
+
+### Docker workflows
+
+| Command | Description |
+| --- | --- |
+| `docker compose up dev` | Start the Vite dev server inside Docker and expose it on port `5173`. |
+| `docker compose run --rm test` | Execute the Vitest suite inside a disposable container. |
+| `docker compose up app -d` | Build and run the production image served by Nginx on port `8080`. |
+
+## CI/CD Pipeline
+
+The GitHub Actions workflow in `.github/workflows/ci.yml` runs on every push to `main` and on pull requests targeting `main`. It comprises four stages:
+
+1. **Test** – Runs the Vitest suite inside Docker (`docker compose run test`).
+2. **Build** – Builds the production image, extracts the `dist` artifact, and uploads it for downstream jobs.
+3. **Deploy** – Deploys the static bundle to Netlify on pushes to `main`. Pull requests still run the job but skip the deployment step.
+4. **Cleanup** – Prunes Docker resources to keep the GitHub runner tidy.
+
+### Required GitHub secrets
+
+Create the following repository secrets before enabling the workflow:
+
+- `VITE_API_URL` – The API endpoint used at build time (falls back to JSONPlaceholder when not provided).
+- `NETLIFY_AUTH_TOKEN` – Personal access token from Netlify.
+- `NETLIFY_SITE_ID` – Site ID of the Netlify project that should receive deployments.
+
+## Netlify deployment
+
+The pipeline uses the official [`netlify/actions/cli`](https://github.com/netlify/actions) action to publish the `dist` directory. You can also deploy manually:
+
+```bash
+npm run build
+npx netlify deploy --dir=dist --prod
+```
+
+Make sure your Netlify site is configured as a static build and that the `VITE_API_URL` environment variable is present in the site settings.

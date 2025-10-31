@@ -42,7 +42,7 @@ const useUserStore = create<State>((set) => ({
       set({ users: data, loading: false })
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err)
-      set({ error: msg, loading: false })
+      set({ error: msg, loading: false, users: [] })
     }
   },
   clear: () => set({ users: [], error: null, loading: false }),
