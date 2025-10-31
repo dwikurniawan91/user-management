@@ -94,7 +94,7 @@ jobs:
 
       - name: Deploy to Netlify
         if: github.event_name != 'pull_request'
-        uses: netlify/actions/cli@v2
+        uses: netlify/actions/cli@v1
         with:
           args: deploy --dir=dist --prod
         env:
