@@ -1,22 +1,49 @@
 # User Management App
 
-React + TypeScript application scaffolded with Vite and enhanced with Docker and a GitHub Actions powered CI/CD pipeline.
+Interactive user directory built with React, TypeScript, and Vite. It fetches users from a configurable API, lets you add/update/delete records in memory, and showcases modern component patterns (forms, dialogs, skeleton loading states) alongside a production-ready toolchain (testing, Docker, CI/CD, Netlify deploys).
 
-## Requirements
+## Features
 
-- Node.js 20+ (only needed if you want to run locally without Docker)
-- Docker & Docker Compose
-- Netlify account (for automated deployments)
+- 🎯 **User CRUD UI** – Browse, add, update, and delete users inside an accessible, responsive layout.
+- 🔄 **API-backed Store** – Zustand store orchestrates fetching, optimistic updates, and local mutations.
+- 🧭 **Routing & Not Found** – Client-side routing via React Router with a dedicated 404 page.
+- ✅ **Form Validation** – User form powered by `react-hook-form` + `zod` for schema enforcement.
+- 🍞 **Toast & Error Boundary** – Global error handling with Sonner toasts and a reusable error boundary.
+- 🎨 **UI Building Blocks** – Radix UI primitives, Tailwind utilities, and custom components (`Button`, `Card`, `Skeleton`, etc.).
+- 🧪 **Testing** – Vitest + React Testing Library cover store logic, forms, and page flows.
+- 🚢 **DevOps Ready** – Dockerized dev/test/build pipeline plus GitHub Actions → Netlify deployment.
 
-## Environment
+## Stack & Libraries
 
-Set `VITE_API_URL` to point at the user API. For local development you can create a `.env` file or export the value in your shell.
+- **Framework**: React 19, Vite 7, TypeScript 5
+- **State**: Zustand
+- **Forms & Validation**: react-hook-form, zod, @hookform/resolvers
+- **Routing**: react-router-dom
+- **UI/Styling**: Tailwind CSS (via `@tailwindcss/vite`), Radix UI primitives, class-variance-authority, lucide-react icons, Sonner toasts, motion
+- **Testing**: Vitest, @testing-library/react, @testing-library/jest-dom
+- **Tooling**: ESLint, Prettier, Docker, GitHub Actions, Netlify
 
-```
+## Project Structure
+
+- `src/page/UserList/UsersList.tsx` – Main screen with list, dialogs, toasts, and skeleton loaders.
+- `src/components/ui/UserForm/UserForm.tsx` – Controlled form with validation and keyboard navigation.
+- `src/stores/userStore.ts` – Zustand store for user state + CRUD actions.
+- `src/services/userService.ts` – API helper + avatar assignment logic.
+- `src/components/ui/ErrorBoundary/ErrorBoundary.tsx` – Application-wide error boundary.
+- `src/page/NotFound/NotFound.tsx` – 404 route.
+- `src/components/ui` – Shared UI primitives (button, card, input, skeleton, etc.).
+
+## Environment Variables
+
+Set `VITE_API_URL` to point at the upstream user API.
+
+```bash
+# .env
 VITE_API_URL=https://jsonplaceholder.typicode.com/users
 ```
 
-> Copy `.env.example` to `.env` and adjust the value for your environment before running any Docker commands.
+- Copy `.env.example` → `.env` before running Docker or Vite.
+- CI/CD consumes the value from the `VITE_API_URL` GitHub secret if provided (falls back to JSONPlaceholder).
 
 ## Local Development
 
@@ -25,46 +52,72 @@ npm install
 npm run dev
 ```
 
-### Docker workflows
+- App runs at `http://localhost:5173`.
+- The store seeds avatars using `pravatar.cc` on fetch.
+
+## Testing
+
+```bash
+npm test -- --run         # run Vitest suite once
+npm test                  # watch mode
+docker compose run test   # run tests inside Docker
+```
+
+Covered scenarios:
+
+- Form validation, submissions, and cancel states.
+- UsersList behaviors (loading skeletons, errors, add dialog).
+- Zustand store (fetch success/failure, mutations).
+- Error boundary fallback rendering + toasts.
+- NotFound route output.
+
+## Build & Preview
+
+```bash
+npm run build             # type-check + vite build -> dist
+npm run preview           # serve the built assets
+docker compose up app     # build + run production image on port 8080
+```
+
+## Docker Workflows
 
 | Command | Description |
 | --- | --- |
-| `docker compose up dev` | Start the Vite dev server inside Docker and expose it on port `5173`. |
-| `docker compose run --rm test` | Execute the Vitest suite inside a disposable container. |
-| `docker compose up app -d` | Build and run the production image served by Nginx on port `8080`. |
+| `docker compose up dev` | Run Vite dev server in container (`5173`). |
+| `docker compose run test` | Execute the test suite in a disposable container. |
+| `docker compose up app` | Build multi-stage image & serve via Nginx (`8080`). |
 
-## CI/CD Pipeline
+> `.dockerignore` ensures node_modules/dist aren’t copied into builds.
 
-The GitHub Actions workflow in `.github/workflows/ci.yml` runs on every push to `main` and on pull requests targeting `main`. It comprises four stages:
+## CI/CD Pipeline (GitHub Actions)
 
-1. **Test** – Runs the Vitest suite inside Docker (`docker compose run test`).
-2. **Build** – Builds the production image, extracts the `dist` artifact, and uploads it for downstream jobs.
-3. **Deploy** – Deploys the static bundle to Netlify on pushes to `main`. Pull requests still run the job but skip the deployment step.
-4. **Cleanup** – Prunes Docker resources to keep the GitHub runner tidy.
+- Defined in `.github/workflows/ci.yml`.
+- Triggers on pushes to `main` and pull requests targeting `main`.
+- Stages:
+  1. **Test** – Runs Vitest in Docker (`docker compose run test`).
+  2. **Build** – Builds Docker image, extracts `dist`, uploads artifact.
+  3. **Deploy** – Netlify CLI deploy (skipped for PRs).
+  4. **Cleanup** – Docker prune to keep runners clean.
 
-### Required GitHub secrets
+### Required GitHub Secrets
 
-Create the following repository secrets before enabling the workflow:
+- `VITE_API_URL` – API endpoint for build/test (optional, falls back to JSONPlaceholder).
+- `NETLIFY_AUTH_TOKEN` – Netlify personal access token.
+- `NETLIFY_SITE_ID` – Netlify site ID receiving deployments.
 
-- `VITE_API_URL` – The API endpoint used at build time (falls back to JSONPlaceholder when not provided).
-- `NETLIFY_AUTH_TOKEN` – Personal access token from Netlify.
-- `NETLIFY_SITE_ID` – Site ID of the Netlify project that should receive deployments.
+## Deployments (Netlify)
 
-### Netlify configuration
+We use **Actions-only deploys**:
 
-This project assumes **GitHub Actions-only deploys**. The workflow builds the site and uploads the `dist` folder via `netlify-cli`, so Netlify only serves the prebuilt assets.
+- GitHub Actions builds and uploads `dist` via `netlify-cli`.
+- `netlify.toml` skips Netlify’s native build (`ignore = "exit 0"`).
+- In Netlify UI → **Site settings → Build & deploy**, click **Stop builds** (or keep them disabled) to avoid duplicate work.
 
-To avoid duplicate builds:
-
-1. Add `netlify.toml` (already included) to your repo. It sets `ignore = "exit 0"` so any Netlify-triggered builds are skipped automatically.
-2. In the Netlify UI, open your site → **Site settings → Build & deploy → Continuous deployment** and click **Stop builds** (or set the skip command) so Netlify does not attempt to build on its own.
-## Netlify deployment
-
-The pipeline uses the official [`netlify/actions/cli`](https://github.com/netlify/actions) action to publish the `dist` directory. You can also deploy manually:
+Manual deploy (optional):
 
 ```bash
 npm run build
 npx netlify deploy --dir=dist --prod
 ```
 
-Make sure your Netlify site is configured as a static build and that the `VITE_API_URL` environment variable is present in the site settings.
+Ensure `VITE_API_URL` is set in Netlify site environment variables if you rely on a non-default backend.
